@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// เปลี่ยนจาก custommer เป็น user
+model User {
+  id       Int     @id @default(autoincrement())
+  username String
+  password String
+  email    String? @unique
+  address  String? 
+  phone    String
+  orders   Order[]
+}
+
+model Order {
+  id          Int           @id @default(autoincrement())
+  totalamount Int           @default(0)
+  orderdate   DateTime
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId      Int           @map("customerId")
+  OrderDetail OrderDetail[]
+  productd    Product[]
+  Payment     Payment[]
+}
+
+model OrderDetail {
+  id         Int     @id @default(autoincrement())
+  quantity   String
+  unit_price String
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  orderId    Int     @map("orderId")
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  productId  Int
+}
+
+model Product {
+  id            Int           @id @default(autoincrement())
+  name          String
+  StockQuantity Int
+  brand         String
+  Price         Int
+  Color         String
+  Description   String
+  OrderDetail   OrderDetail[]
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  orderId       Int
+}
+
+model Payment {
+  id             Int      @id @default(autoincrement())
+  payment_date   String
+  payment_method String
+  amount         Int
+  PaymentStatus  String
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  orderId        Int      @map("Order_Id")
+  shipping       Shipping @relation(fields: [shippingId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  shippingId     Int
+}
+
+model Shipping {
+  id              Int       @id @default(autoincrement())
+  shipping_date   String
+  tracking_number String
+  status          String
+  Payment         Payment[]
+}
